@@ -1,17 +1,28 @@
-const Filter = ({ categories, selectedCategory, onSelectCategory }: any) => {
-    return (
-      <div className="filter">
-        <h2>Фильтр по категории</h2>
-        <select value={selectedCategory} onChange={(e) => onSelectCategory(e.target.value)}>
-          <option value="">Все</option>
-          {categories.map((category: any) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-      </div>
-    );
-  };
+import React from 'react';
 
+import {
+  Typography,
+  Select,
+  MenuItem,
+} from '@mui/material';
+
+function Filter({ categories, selectedCategory, onSelectCategory }: any) {
+  return (
+    <div style={{ marginBottom: '20px' }}>
+      <Typography variant="h6">Фильтр по категории</Typography>
+      <Select
+        value={selectedCategory}
+        onChange={(e) => onSelectCategory(e.target.value)}
+        fullWidth
+      >
+        <MenuItem value="">Все</MenuItem>
+        {categories.map((category: any) => (
+          <MenuItem key={category} value={category}>
+            {category}
+          </MenuItem>
+        ))}
+      </Select>
+    </div>
+  );
+}
   export default Filter;

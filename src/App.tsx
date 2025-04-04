@@ -1,21 +1,31 @@
 import React, { useEffect, useState } from 'react';
-
-import './App.css';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import {
+  Container,
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+} from '@mui/material';
 import Filter from './Filter';
 import Search from './Search';
+import Catalog from './Catalog';
+import Cart from './Cart';
+
 
 function App() {
-  const [products, setProduct] = useState<any>(null);
+  const [products, setProducts] = useState<any>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [cartItems, setCartItems] = useState([]);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProducts = async () => {
       try {
         const response = await fetch('https://fakestoreapi.com/products');
         const json = await response.json();
-        setProduct(json);
+        setProducts(json);
       } catch (error) {
         console.error('Ошибка при получении данных:', error);
       } finally {
@@ -23,11 +33,11 @@ function App() {
       }
     };
 
-    fetchProduct();
+    fetchProducts();
   }, []);
 
   if (loading) {
-    return <div>Загрузка...</div>;
+    return <Container><Typography>Загрузка...</Typography></Container>;
   }
 
   const categories = Array.from(new Set(products.map((product: any) => product.category)));
@@ -38,36 +48,78 @@ function App() {
     return matchesCategory && matchesSearchTerm;
   });
 
-  return (
-    <div className="App">
-      <div className="sidebar">
-        <Filter
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-        />
-        <Search
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-        />
-      </div>
-      <div className="product-list">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product: any) => (
-            <div key={product.id} className="product">
-              <h1>{product.title}</h1>
-              <p>{product.description}</p>
-              <p>Цена: ${product.price}</p>
-              <img src={product.image} alt={product.title} width={236} />
-            </div>
-          ))
-        ) : (
-          <p>Продукты не найдены.</p>
-        )}
-      </div>
-    </div>
-  );
 
+  const addToCart = (product: any) => {
+    setCartItems((prevItems: any) => {
+      const existingItem = prevItems.find((item: any) => item.id === product.id);
+      if (existingItem) {
+        return prevItems.map((item: any) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prevItems, { ...product, quantity: 1 }];
+    });
+  };
+
+
+   const removeFromCart = (id: any) => {
+     setCartItems(prevItems =>
+       prevItems.reduce((accumulator: any, item: any) => {
+         if (item.id === id) {
+           if (item.quantity > 1) {
+             accumulator.push({ ...item, quantity: item.quantity - 1 });
+           }
+           return accumulator;
+         }
+         accumulator.push(item);
+         return accumulator;
+       }, [])
+     );
+   };
+
+   return (
+     <Router>
+       <AppBar position="static">
+         <Toolbar>
+           <Typography variant="h6" style={{ flexGrow:1 }}>
+             Мой Магазин
+           </Typography>
+
+           <Button color="inherit" component={Link} to="/">Каталог</Button>
+           <Button color="inherit" component={Link} to="/cart">Корзина</Button>
+
+         </Toolbar>
+       </AppBar>
+
+       <Container style={{ marginTop: '20px' }}>
+         <Routes>
+           <Route path="/" element={
+             <>
+               <Filter 
+                 categories={categories} 
+                 selectedCategory={selectedCategory} 
+                 onSelectCategory={setSelectedCategory} 
+               />
+               <Search 
+                 searchTerm={searchTerm} 
+                 onSearchChange={setSearchTerm} 
+               />
+               {!loading && (
+                 <Catalog products={filteredProducts} addToCart={addToCart} />
+               )}
+             </>
+           } />
+           <Route path="/cart" element={
+             <>
+               {!loading && (
+                 <Cart cartItems={cartItems} onRemoveFromCart={removeFromCart} />
+               )}
+             </>
+           } /> 
+         </Routes>
+       </Container>
+     </Router >
+   );
 }
 
 export default App;
