@@ -1,3 +1,20 @@
 .App {
   text-align: center;
 }
+.sidebar {
+  width: 200px; /* Ширина боковой панели */
+  padding: 20px;
+  display: flex;
+}
+
+.product-list {
+  flex-grow: 1; /* Занимает оставшееся пространство */
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap; /* Позволяет элементам переноситься на новую строку */
+}
+
+.product {
+  width: calc(25% - 20px); /* Ширина каждого продукта (4 в ряд с учетом отступов) */
+  margin: 10px; /* Отступы между продуктами */
+}
